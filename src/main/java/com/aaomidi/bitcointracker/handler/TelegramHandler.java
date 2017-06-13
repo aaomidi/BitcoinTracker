@@ -28,7 +28,7 @@ public class TelegramHandler implements Listener {
         bot.getEventsManager().register(new TelegramInlineHandler(instance, bot));
         channel = bot.getChat(channelID);
 
-        startChannel();
+        //startChannel();
     }
 
     private void startChannel() {
@@ -62,7 +62,7 @@ public class TelegramHandler implements Listener {
         if (coin == null) return;
 
         event.getChat().sendMessage(SendableTextMessage.builder()
-                .message(coin.getCoin(currency).getFormattedMessage(true))
+                .message(coin.getCoin(currency).getFormattedMessage(true, -1))
                 .parseMode(ParseMode.MARKDOWN).build());
     }
 

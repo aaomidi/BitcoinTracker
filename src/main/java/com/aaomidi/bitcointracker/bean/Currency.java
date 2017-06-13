@@ -5,10 +5,10 @@ import lombok.Getter;
 
 @AllArgsConstructor
 public enum Currency {
-    USD("USD", "$"),
-    RUB("RUB", "\u20BD"),
+    USD("USD", "$");
+    /*RUB("RUB", "\u20BD"),
     CNY("CNY", "¥"),
-    BRL("BRL", "R$");
+    BRL("BRL", "R$"); */
 
     @Getter
     private final String name;

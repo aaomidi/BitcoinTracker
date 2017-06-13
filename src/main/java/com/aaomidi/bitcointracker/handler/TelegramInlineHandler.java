@@ -3,12 +3,14 @@ package com.aaomidi.bitcointracker.handler;
 import com.aaomidi.bitcointracker.BitcoinTracker;
 import com.aaomidi.bitcointracker.bean.Bitcoin;
 import com.aaomidi.bitcointracker.bean.Currency;
+import com.aaomidi.bitcointracker.bean.UpdatableMessage;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import pro.zackpollard.telegrambot.api.TelegramBot;
 import pro.zackpollard.telegrambot.api.chat.inline.send.InlineQueryResponse;
 import pro.zackpollard.telegrambot.api.chat.inline.send.results.InlineQueryResult;
 import pro.zackpollard.telegrambot.api.event.Listener;
+import pro.zackpollard.telegrambot.api.event.chat.inline.InlineCallbackQueryReceivedEvent;
 import pro.zackpollard.telegrambot.api.event.chat.inline.InlineQueryReceivedEvent;
 
 import java.util.LinkedList;
@@ -37,11 +39,16 @@ public class TelegramInlineHandler implements Listener {
         }
         List<InlineQueryResult> list = new LinkedList<>();
         for (Currency currency : Currency.values()) {
-            if (currency.getName().startsWith(query)) {
+            if (query.isEmpty() || currency.getName().startsWith(query)) {
                 list.add(bitcoin.getCoin(currency).getInline());
             }
         }
 
         event.getQuery().answer(bot, InlineQueryResponse.builder().results(list).cacheTime(10).build());
+    }
+
+    @Override
+    public void onInlineCallbackQueryReceivedEvent(InlineCallbackQueryReceivedEvent event) {
+        new UpdatableMessage(instance, bot, event.getCallbackQuery().getInlineMessageId(), Currency.valueOf(event.getCallbackQuery().getData()), 5, false);
     }
 }

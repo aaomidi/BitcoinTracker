@@ -1,5 +1,6 @@
 package com.aaomidi.bitcointracker.bean;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import pro.zackpollard.telegrambot.api.chat.inline.send.content.InputTextMessageContent;
@@ -14,7 +15,7 @@ import java.util.TimeZone;
 
 @ToString
 @RequiredArgsConstructor
-public class LocalBitcoin {
+public class CryptoCoin {
     private transient static TimeZone tz = TimeZone.getTimeZone("UTC");
     private transient static DateFormat df = new SimpleDateFormat("yyy-MM-dd HH:mm:ss z");
 
@@ -22,32 +23,37 @@ public class LocalBitcoin {
         df.setTimeZone(tz);
     }
 
-    private final Currency currency;
-    private final double buy;
-    private final double sell;
-    private final long ts;
+    @Getter
+    private final CoinType type;
+    @Getter
+    private final String exchange;
+    @Getter
+    private final int day;
+    @Getter
+    private final double price;
+    @Getter
+    private final long timestamp;
 
     public String getFormattedMessage(boolean isPrivate, long timeRemaining) {
-        long time = ts * 1000;
-        StringBuilder msg = new StringBuilder("💰 Latest Bitcoin Price 💰");
+        StringBuilder msg = new StringBuilder(String.format("💰 Latest %s Price 💰", type.getHumanizedName()));
         msg
-                .append(String.format("%nCurrency: *%s*%nSell: *%s%.2f*%nBuy: *%s%.2f*", currency.getName(), currency.getSymbol(), buy, currency.getSymbol(), sell))
-                .append(String.format("%nLast Updated: *%s*", df.format(time)));
+                .append(String.format("Price: *$%.2f*", price))
+                .append(String.format("%nLast Updated: *%s*", df.format(timestamp)));
 
         if (timeRemaining > 0) {
             msg.append(String.format("%nTime remaining: *%d minutes %d seconds*", timeRemaining / 60, timeRemaining % 60));
         }
 
         if (isPrivate) {
-            msg.append(String.format("%n%nJoin @BitCoinTracker for live tracking!"));
+            msg.append(String.format("%n%nJoin @BitCoinTracker for live tracking and price alerts!"));
         }
         return msg.toString();
     }
 
     public InlineQueryResultArticle getInline() {
         return InlineQueryResultArticle.builder()
-                .title(currency.getName())
-                .description(String.format("Buy: %s%.2f Sell: %s%.2f", currency.getSymbol(), buy, currency.getSymbol(), sell))
+                .title(type.getHumanizedName())
+                .description(String.format("Price: $%.2f", price))
                 .inputMessageContent(
                         InputTextMessageContent.builder()
                                 .messageText(getFormattedMessage(true, -1))
@@ -56,15 +62,10 @@ public class LocalBitcoin {
                 .replyMarkup(InlineKeyboardMarkup.builder()
                         .addRow(InlineKeyboardButton.builder()
                                 .text("Start live updates!")
-                                .callbackData(currency.toString())
+                                .callbackData(type.toString())
                                 .build()
                         )
                         .build())
                 .build();
-    }
-
-    public boolean hasChanged(LocalBitcoin localBitcoin) {
-        return true;
-        // return localBitcoin.buy != buy || localBitcoin.sell != sell;
     }
 }
