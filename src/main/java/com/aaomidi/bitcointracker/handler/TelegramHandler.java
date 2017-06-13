@@ -1,9 +1,9 @@
 package com.aaomidi.bitcointracker.handler;
 
 import com.aaomidi.bitcointracker.BitcoinTracker;
-import com.aaomidi.bitcointracker.bean.Bitcoin;
-import com.aaomidi.bitcointracker.bean.Currency;
+import com.aaomidi.bitcointracker.bean.CoinType;
 import com.aaomidi.bitcointracker.bean.UpdatableMessage;
+import com.aaomidi.bitcointracker.registries.CoinRegistry;
 import pro.zackpollard.telegrambot.api.TelegramBot;
 import pro.zackpollard.telegrambot.api.chat.Chat;
 import pro.zackpollard.telegrambot.api.chat.message.Message;
@@ -39,7 +39,7 @@ public class TelegramHandler implements Listener {
                 .build();
 
         Message message = channel.sendMessage(msg);
-        new UpdatableMessage(instance, bot, message, Currency.USD, 10L, true);
+        new UpdatableMessage(instance, bot, message, CoinType.BTC, 2L, true);
     }
 
     @Override
@@ -49,20 +49,20 @@ public class TelegramHandler implements Listener {
             return;
         }
         String arg = event.getArgsString();
-        if (arg == null || arg.isEmpty()) arg = "USD";
-        Currency currency = null;
+        if (arg == null || arg.isEmpty()) arg = "BTC";
+        CoinType coinType = null;
         try {
-            currency = Currency.valueOf(arg);
+            coinType = CoinType.valueOf(arg);
         } catch (IllegalArgumentException ex) {
             // currency not found
         }
-        if (currency == null) return;
+        if (coinType == null) return;
 
-        Bitcoin coin = instance.getBitcoinHandler().getLatestCoin();
+        CoinRegistry coin = instance.getBitcoinHandler().getCoin(coinType);
         if (coin == null) return;
 
         event.getChat().sendMessage(SendableTextMessage.builder()
-                .message(coin.getCoin(currency).getFormattedMessage(true, -1))
+                .message(coin.getFormattedMessage(true, -1))
                 .parseMode(ParseMode.MARKDOWN).build());
     }
 

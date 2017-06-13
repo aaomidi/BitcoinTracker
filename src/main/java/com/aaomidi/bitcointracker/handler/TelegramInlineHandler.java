@@ -1,8 +1,7 @@
 package com.aaomidi.bitcointracker.handler;
 
 import com.aaomidi.bitcointracker.BitcoinTracker;
-import com.aaomidi.bitcointracker.bean.Bitcoin;
-import com.aaomidi.bitcointracker.bean.Currency;
+import com.aaomidi.bitcointracker.bean.CoinType;
 import com.aaomidi.bitcointracker.bean.UpdatableMessage;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -15,32 +14,34 @@ import pro.zackpollard.telegrambot.api.event.chat.inline.InlineQueryReceivedEven
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 public class TelegramInlineHandler implements Listener {
+    private final static transient Cache<String, Boolean> messageCache;
+
+    static {
+        messageCache = CacheBuilder.newBuilder().expireAfterWrite(40, TimeUnit.MINUTES).build();
+    }
+
     private final BitcoinTracker instance;
     private final TelegramBot bot;
-    private final transient Cache<UUID, Currency> currencyCache;
-
 
     public TelegramInlineHandler(BitcoinTracker instance, TelegramBot bot) {
         this.instance = instance;
         this.bot = bot;
-        this.currencyCache = CacheBuilder.newBuilder().expireAfterWrite(30, TimeUnit.MINUTES).build();
     }
 
     @Override
     public void onInlineQueryReceived(InlineQueryReceivedEvent event) {
         String query = event.getQuery().getQuery().toUpperCase();
-        Bitcoin bitcoin = instance.getBitcoinHandler().getLatestCoin();
-        if (bitcoin == null) {
+        //Bitcoin bitcoin = instance.getBitcoinHandler().getLatestCoin();
+        /*if (bitcoin == null) {
             return;
-        }
+        }*/
         List<InlineQueryResult> list = new LinkedList<>();
-        for (Currency currency : Currency.values()) {
-            if (query.isEmpty() || currency.getName().startsWith(query)) {
-                list.add(bitcoin.getCoin(currency).getInline());
+        for (CoinType coinType : CoinType.values()) {
+            if (query.isEmpty() || coinType.toString().toLowerCase().startsWith(query.toLowerCase())) {
+                list.add(instance.getBitcoinHandler().getCoin(coinType).getInline());
             }
         }
 
@@ -49,6 +50,12 @@ public class TelegramInlineHandler implements Listener {
 
     @Override
     public void onInlineCallbackQueryReceivedEvent(InlineCallbackQueryReceivedEvent event) {
-        new UpdatableMessage(instance, bot, event.getCallbackQuery().getInlineMessageId(), Currency.valueOf(event.getCallbackQuery().getData()), 5, false);
+        if (messageCache.asMap().containsKey(event.getCallbackQuery().getInlineMessageId())) {
+            return;
+        }
+
+        messageCache.put(event.getCallbackQuery().getInlineMessageId(), true);
+
+        new UpdatableMessage(instance, bot, event.getCallbackQuery().getInlineMessageId(), CoinType.valueOf(event.getCallbackQuery().getData()), 5, false);
     }
 }

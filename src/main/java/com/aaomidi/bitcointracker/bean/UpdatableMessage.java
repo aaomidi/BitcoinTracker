@@ -1,11 +1,13 @@
 package com.aaomidi.bitcointracker.bean;
 
 import com.aaomidi.bitcointracker.BitcoinTracker;
+import com.aaomidi.bitcointracker.registries.CoinRegistry;
 import lombok.ToString;
 import pro.zackpollard.telegrambot.api.TelegramBot;
 import pro.zackpollard.telegrambot.api.chat.message.Message;
 import pro.zackpollard.telegrambot.api.chat.message.send.ParseMode;
 
+import java.util.HashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -16,7 +18,7 @@ public class UpdatableMessage {
     private final BitcoinTracker instance;
     private final TelegramBot bot;
     private final String inlineMessageID;
-    private final Currency currency;
+    private final CoinType coinType;
     private final boolean isChannel;
     private final long start;
 
@@ -24,24 +26,24 @@ public class UpdatableMessage {
 
     private ScheduledFuture future = null;
     private long lastUpdate;
-    private LocalBitcoin lastCoin;
+    private CoinRegistry lastCoin;
 
 
-    public UpdatableMessage(BitcoinTracker instance, TelegramBot bot, Message message, Currency currency, long delay, boolean isChannel) {
-        this(instance, bot, message, null, currency, delay, isChannel);
+    public UpdatableMessage(BitcoinTracker instance, TelegramBot bot, Message message, CoinType coinType, long delay, boolean isChannel) {
+        this(instance, bot, message, null, coinType, delay, isChannel);
     }
 
-    public UpdatableMessage(BitcoinTracker instance, TelegramBot bot, String inlineMessageID, Currency currency, long delay, boolean isChannel) {
-        this(instance, bot, null, inlineMessageID, currency, delay, isChannel);
+    public UpdatableMessage(BitcoinTracker instance, TelegramBot bot, String inlineMessageID, CoinType coinType, long delay, boolean isChannel) {
+        this(instance, bot, null, inlineMessageID, coinType, delay, isChannel);
     }
 
-    private UpdatableMessage(BitcoinTracker instance, TelegramBot bot, Message message, String inlineMessageID, Currency currency, long delay, boolean isChannel) {
+    private UpdatableMessage(BitcoinTracker instance, TelegramBot bot, Message message, String inlineMessageID, CoinType coinType, long delay, boolean isChannel) {
 
         this.instance = instance;
         this.bot = bot;
         this.inlineMessageID = inlineMessageID;
         this.message = message;
-        this.currency = currency;
+        this.coinType = coinType;
         this.isChannel = isChannel;
 
 
@@ -59,18 +61,17 @@ public class UpdatableMessage {
                 future.cancel(false);
             }
 
-            Bitcoin latestCoin = instance.getBitcoinHandler().getLatestCoin();
+            CoinRegistry latestCoin = instance.getBitcoinHandler().getCoin(coinType);
             if (latestCoin == null) return;
-            LocalBitcoin coin = latestCoin.getCoin(currency);
-            if (coin == null) return;
 
-            if (lastCoin != null && !coin.hasChanged(lastCoin)) return;
 
-            lastCoin = coin;
+            //if (lastCoin != null && !coin.hasChanged(lastCoin)) return;
+
+            lastCoin = latestCoin;
             if (message == null) {
-                editMessage(coin.getFormattedMessage(!isChannel, (MAX_TIME - (currentTime - start))));
+                editMessage(latestCoin.getFormattedMessage(!isChannel, (MAX_TIME - (currentTime - start))));
             } else {
-                editMessage(coin.getFormattedMessage(isChannel, -1));
+                editMessage(latestCoin.getFormattedMessage(isChannel, -1));
             }
         }, 5, delay, TimeUnit.SECONDS);
     }

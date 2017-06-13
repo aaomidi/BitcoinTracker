@@ -7,6 +7,6 @@ import lombok.RequiredArgsConstructor;
 public enum CoinType {
     BTC("Bitcoin"),
     LTC("Litecoin");
-@Getter
+    @Getter
     private final String humanizedName;
 }

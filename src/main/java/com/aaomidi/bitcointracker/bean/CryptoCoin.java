@@ -34,38 +34,5 @@ public class CryptoCoin {
     @Getter
     private final long timestamp;
 
-    public String getFormattedMessage(boolean isPrivate, long timeRemaining) {
-        StringBuilder msg = new StringBuilder(String.format("💰 Latest %s Price 💰", type.getHumanizedName()));
-        msg
-                .append(String.format("Price: *$%.2f*", price))
-                .append(String.format("%nLast Updated: *%s*", df.format(timestamp)));
 
-        if (timeRemaining > 0) {
-            msg.append(String.format("%nTime remaining: *%d minutes %d seconds*", timeRemaining / 60, timeRemaining % 60));
-        }
-
-        if (isPrivate) {
-            msg.append(String.format("%n%nJoin @BitCoinTracker for live tracking and price alerts!"));
-        }
-        return msg.toString();
-    }
-
-    public InlineQueryResultArticle getInline() {
-        return InlineQueryResultArticle.builder()
-                .title(type.getHumanizedName())
-                .description(String.format("Price: $%.2f", price))
-                .inputMessageContent(
-                        InputTextMessageContent.builder()
-                                .messageText(getFormattedMessage(true, -1))
-                                .parseMode(ParseMode.MARKDOWN)
-                                .build())
-                .replyMarkup(InlineKeyboardMarkup.builder()
-                        .addRow(InlineKeyboardButton.builder()
-                                .text("Start live updates!")
-                                .callbackData(type.toString())
-                                .build()
-                        )
-                        .build())
-                .build();
-    }
 }
