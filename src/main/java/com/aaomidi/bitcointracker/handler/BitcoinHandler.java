@@ -1,114 +1,101 @@
 package com.aaomidi.bitcointracker.handler;
 
 import com.aaomidi.bitcointracker.BitcoinTracker;
-import com.aaomidi.bitcointracker.bean.Bitcoin;
-import com.aaomidi.bitcointracker.bean.Currency;
-import com.aaomidi.bitcointracker.bean.LocalBitcoin;
-import com.google.gson.Gson;
+import com.aaomidi.bitcointracker.bean.CoinType;
+import com.aaomidi.bitcointracker.bean.CryptoCoin;
+import com.aaomidi.bitcointracker.registries.CoinRegistry;
+import com.neovisionaries.ws.client.WebSocket;
+import com.neovisionaries.ws.client.WebSocketAdapter;
+import com.neovisionaries.ws.client.WebSocketFactory;
+import lombok.Getter;
+import org.json.JSONArray;
 
-import javax.net.ssl.HttpsURLConnection;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
+@Getter
 public class BitcoinHandler {
-    private final TreeMap<Long, Bitcoin> coins = new TreeMap<>();
-    private final Gson gson = new Gson();
-    private final ReentrantLock lock = new ReentrantLock(true);
+    private final ConcurrentHashMap<CoinType, CoinRegistry> coins = new ConcurrentHashMap<>();
+    private final ReentrantLock lock = new ReentrantLock(false);
+    private final BitcoinTracker instance;
 
-    private URL url;
-    private String addr = "https://blockchain.info/ticker";
+    private String blockchainAddr = "https://blockchain.info/ticker";
+    private URL blockchainURL;
 
-    public BitcoinHandler() {
+    public BitcoinHandler(BitcoinTracker instance) {
+        this.instance = instance;
         try {
-            url = new URL(addr);
+            blockchainURL = new URL(blockchainAddr);
         } catch (Exception ex) {
             ex.printStackTrace();
             return;
         }
 
-        BitcoinTracker.scheduledService.scheduleAtFixedRate(() -> {
-            try {
-                HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
-                conn.setRequestMethod("GET");
-                conn.setRequestProperty("Accept", "application/json");
-                BufferedReader br = new BufferedReader(new InputStreamReader(
-                        (conn.getInputStream())));
-                StringBuilder sb = new StringBuilder();
-
-                String output;
-                while ((output = br.readLine()) != null) {
-                    sb.append(output);
-                }
-                // Locking
-                lock.lock();
-                try {
-                    handleData(sb.toString());
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                } finally {
-                    lock.unlock();
-                }
-
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-
-            try {
-                Thread.sleep(1000);
-            } catch (Exception ex) {
-                // ignore;
-            }
-        }, 0L, 5L, TimeUnit.SECONDS);
+        handleBitcoinWisdomAPI();
     }
 
-    private void handleData(String data) {
-        long time = System.currentTimeMillis() / 1000;
-        Map<String, Map<?, ?>> value = gson.fromJson(data, Map.class);
-        HashMap<Currency, LocalBitcoin> coins = new HashMap<>();
-
-        for (Map.Entry<String, Map<?, ?>> entry : value.entrySet()) {
-            Map<?, ?> val = entry.getValue();
-            Currency currency;
-            try {
-                currency = Currency.valueOf(entry.getKey().toUpperCase());
-            } catch (IllegalArgumentException ex) {
-                continue;
-            }
-
-            double buy = (Double) val.get("buy");
-            double sell = (Double) val.get("sell");
-            coins.put(currency, new LocalBitcoin(currency, buy, sell, time));
-        }
-
-        Bitcoin bitcoin = new Bitcoin(time, coins);
-        registerBitcoin(bitcoin);
-    }
-
-    private void registerBitcoin(Bitcoin bitcoin) {
-        coins.put(bitcoin.getTimestamp(), bitcoin);
-    }
-
-    public Bitcoin getLatestCoin() {
-        lock.lock();
-        Bitcoin bitcoin = null;
+    private void handleBitcoinWisdomAPI() {
         try {
-            Map.Entry<Long, Bitcoin> entry = coins.lastEntry();
-            if (entry == null) {
-                bitcoin = null;
-            } else {
-                bitcoin = entry.getValue();
-            }
+            WebSocket socket = new WebSocketFactory()
+                    .createSocket("wss://d2.bitcoinwisdom.com/overview")
+                    .addHeader("Origin", "https://bitcoinwisdom.com")
+                    .addListener(new WebSocketAdapter() {
+                        @Override
+                        public void onTextMessage(WebSocket websocket, String message) throws Exception {
+
+                            //System.out.println(message);
+                            lock.lock();
+                            try {
+                                long time = System.currentTimeMillis();
+                                JSONArray data = new JSONArray(message);
+                                if (data.getString(0).equals("info")) {
+
+                                    CoinType coinType;
+                                    String info = data.getString(1);
+                                    if (info.contains("ltcusd")) {
+                                        coinType = CoinType.LTC;
+                                    } else if (info.contains("btcusd")) {
+                                        coinType = CoinType.BTC;
+                                    } else if (info.contains("xmrbtc")) {
+                                        coinType = CoinType.XMR;
+                                    } else {
+                                        return;
+                                    }
+
+                                    CryptoCoin cryptoCoin = new CryptoCoin(coinType, data.getString(1), data.getInt(2), data.getDouble(3), time);
+                                    registerCoin(cryptoCoin);
+
+                                }
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
+                            } finally {
+                                lock.unlock();
+                            }
+                        }
+                    }).connectAsynchronously();
+
+            BitcoinTracker.scheduledService.scheduleAtFixedRate(() -> socket.sendText("ping"), 50, 15, TimeUnit.SECONDS);
         } catch (Exception ex) {
             ex.printStackTrace();
-        } finally {
-            lock.unlock();
         }
-        return bitcoin;
+
+
     }
+
+    private void registerCoin(CryptoCoin cryptoCoin) {
+        CoinRegistry registry = coins.getOrDefault(cryptoCoin.getType(), new CoinRegistry(instance, cryptoCoin.getType()));
+        registry.registerCoin(cryptoCoin);
+        coins.put(cryptoCoin.getType(), registry);
+        if (cryptoCoin.getDay() == 0 && cryptoCoin.getType() == CoinType.BTC)
+            System.out.println(cryptoCoin);
+    }
+
+    public CoinRegistry getCoin(CoinType type) {
+        return coins.get(type);
+    }
+
 }
