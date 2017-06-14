@@ -13,7 +13,8 @@ import pro.zackpollard.telegrambot.api.event.Listener;
 import pro.zackpollard.telegrambot.api.event.chat.message.CommandMessageReceivedEvent;
 
 public class TelegramHandler implements Listener {
-    private final static String channelID = "@BitcoinTracker";
+    //private final static String channelID = "@BitcoinTracker";
+    private final static String channelID = "-244026053";
 
     private final BitcoinTracker instance;
     private final Chat channel;
@@ -28,10 +29,10 @@ public class TelegramHandler implements Listener {
         bot.getEventsManager().register(new TelegramInlineHandler(instance, bot));
         channel = bot.getChat(channelID);
 
-        //startChannel();
+        startChannel(false);
     }
 
-    private void startChannel() {
+    public void startChannel(boolean isInstant) {
         SendableTextMessage msg = SendableTextMessage.builder()
                 .message("Bot starting up...")
                 .disableNotification(true)
@@ -39,7 +40,8 @@ public class TelegramHandler implements Listener {
                 .build();
 
         Message message = channel.sendMessage(msg);
-        new UpdatableMessage(instance, bot, message, CoinType.BTC, 2L, true);
+
+        new UpdatableMessage(instance, bot, message, CoinType.BTC, 3L, true,isInstant);
     }
 
     @Override
