@@ -66,7 +66,7 @@ public class CoinRegistry {
             }
             // Handle other types of coins.
             if (type != CoinType.BTC && type != CoinType.LTC) {
-                double btc = instance.getBitcoinHandler().getCoin(CoinType.BTC).getAverage(0);
+                double btc = instance.getBitcoinHandler().getCoin(CoinType.BTC).getAverage(99);
 
                 return btc * average;
             }
@@ -97,7 +97,7 @@ public class CoinRegistry {
         try {
 
             StringBuilder msg = new StringBuilder(String.format("💰 %s Tracker 💰", type.getHumanizedName()));
-            double now = getAverage(0);
+            double now = getAverage(99);
             double other;
 
             msg.append(String.format("%n%n\uD83D\uDD37 Right now: *$%.2f*", now));
@@ -133,7 +133,7 @@ public class CoinRegistry {
         try {
             return InlineQueryResultArticle.builder()
                     .title(type.getHumanizedName())
-                    .description(String.format("Price: $%.2f", getAverage(0)))
+                    .description(String.format("Price: $%.2f", getAverage(99)))
                     .inputMessageContent(
                             InputTextMessageContent.builder()
                                     .messageText(getFormattedMessage(true, -1))

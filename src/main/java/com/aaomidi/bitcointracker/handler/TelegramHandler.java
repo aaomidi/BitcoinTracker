@@ -14,7 +14,8 @@ import pro.zackpollard.telegrambot.api.event.chat.message.CommandMessageReceived
 
 public class TelegramHandler implements Listener {
     //private final static String channelID = "@BitcoinTracker";
-    private final static String channelID = "-244026053";
+    //private final static String channelID = "-244026053";
+    private final static String channelID = "-224385404";
 
     private final BitcoinTracker instance;
     private final Chat channel;

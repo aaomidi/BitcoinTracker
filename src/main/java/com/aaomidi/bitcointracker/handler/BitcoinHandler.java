@@ -68,6 +68,7 @@ public class BitcoinHandler {
 
                                     CryptoCoin cryptoCoin = new CryptoCoin(coinType, data.getString(1), data.getInt(2), data.getDouble(3), time);
                                     registerCoin(cryptoCoin);
+
                                 }
                             } catch (Exception ex) {
                                 ex.printStackTrace();
@@ -89,7 +90,7 @@ public class BitcoinHandler {
         CoinRegistry registry = coins.getOrDefault(cryptoCoin.getType(), new CoinRegistry(instance, cryptoCoin.getType()));
         registry.registerCoin(cryptoCoin);
         coins.put(cryptoCoin.getType(), registry);
-        if (cryptoCoin.getDay() == 0&&cryptoCoin.getType()==CoinType.BTC)
+        if (cryptoCoin.getDay() == 0 && cryptoCoin.getType() == CoinType.BTC)
             System.out.println(cryptoCoin);
     }
 

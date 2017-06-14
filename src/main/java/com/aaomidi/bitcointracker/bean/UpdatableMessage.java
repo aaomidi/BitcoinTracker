@@ -74,7 +74,7 @@ public class UpdatableMessage {
                 if (isFirst) {
                     coinRegistry = instance.getBitcoinHandler().getCoin(coinType);
                     if (coinRegistry == null) return;
-                    double price = coinRegistry.getAverage(0);
+                    double price = coinRegistry.getAverage(99);
                     if (price == 0) return;
 
                     isFirst = false;
@@ -109,7 +109,7 @@ public class UpdatableMessage {
     }
 
     private boolean handleChannelAlert() {
-        double now = coinRegistry.getAverage(0);
+        double now = coinRegistry.getAverage(99);
         double percent = CoinRegistry.getPercent(now, lastAlertPrice);
 
         double percentChange = percent - 100;
@@ -128,7 +128,6 @@ public class UpdatableMessage {
         editMessage(String.format("\uD83D\uDD14\uD83D\uDD14\uD83D\uDD14\n\n*%s Price Alert!*\n\nThe price has *%s* by *%.2f%%*", coinType.getHumanizedName(), action, Math.abs(percentChange)));
 
         instance.getTelegramHandler().startChannel(true);
-        instance.getBitcoinHandler().getCoins().clear();
         return true;
     }
 }
