@@ -34,15 +34,19 @@ public class TelegramHandler implements Listener {
     }
 
     public void startChannel(boolean isInstant) {
-        SendableTextMessage msg = SendableTextMessage.builder()
+        SendableTextMessage.SendableTextMessageBuilder builder = SendableTextMessage.builder()
                 .message("Bot starting up...")
                 .disableNotification(true)
-                .parseMode(ParseMode.MARKDOWN)
-                .build();
+                .parseMode(ParseMode.MARKDOWN);
 
-        Message message = channel.sendMessage(msg);
+        if (isInstant) {
+            builder.disableNotification(false);
+        }
 
-        new UpdatableMessage(instance, bot, message, CoinType.BTC, 3L, true,isInstant);
+
+        Message message = channel.sendMessage(builder.build());
+
+        new UpdatableMessage(instance, bot, message, CoinType.BTC, 3L, true, isInstant);
     }
 
     @Override

@@ -13,7 +13,7 @@ public class PriceAlert {
     private final CoinType coinType;
     private final AlertDirection alertDirection;
     private final double amount;
-    
+
     private final String requestingUser;
     private final String requestingChat;
 
