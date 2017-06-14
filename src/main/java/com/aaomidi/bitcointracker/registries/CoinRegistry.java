@@ -58,9 +58,6 @@ public class CoinRegistry {
             for (CryptoCoin coin : map.values()) {
                 average += coin.getPrice();
             }
-            if (day == 0) {
-                System.out.println(average);
-            }
             if (map.size() != 0) {
                 average /= map.size();
             }

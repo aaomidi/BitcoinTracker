@@ -47,7 +47,6 @@ public class BitcoinHandler {
                         @Override
                         public void onTextMessage(WebSocket websocket, String message) throws Exception {
 
-                            //System.out.println(message);
                             lock.lock();
                             try {
                                 long time = System.currentTimeMillis();
@@ -90,8 +89,6 @@ public class BitcoinHandler {
         CoinRegistry registry = coins.getOrDefault(cryptoCoin.getType(), new CoinRegistry(instance, cryptoCoin.getType()));
         registry.registerCoin(cryptoCoin);
         coins.put(cryptoCoin.getType(), registry);
-        if (cryptoCoin.getDay() == 0 && cryptoCoin.getType() == CoinType.BTC)
-            System.out.println(cryptoCoin);
     }
 
     public CoinRegistry getCoin(CoinType type) {
