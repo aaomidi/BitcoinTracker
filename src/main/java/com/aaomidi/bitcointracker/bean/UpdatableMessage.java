@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 public class UpdatableMessage {
     public final static long MAX_TIME = 30 * 60;
 
-    public final static double CHANGE_PERCENT = 0.5;
+    public final static double CHANGE_PERCENT = 3;
 
     private final BitcoinTracker instance;
     private final TelegramBot bot;
