@@ -104,7 +104,10 @@ public class UpdatableMessage {
         if (message == null) {
             bot.editInlineMessageText(inlineMessageID, msg, ParseMode.MARKDOWN, false, null);
         } else {
-            message = bot.editMessageText(message, msg, ParseMode.MARKDOWN, false, null);
+            Message newMsg = bot.editMessageText(message, msg, ParseMode.MARKDOWN, false, null);
+            if (newMsg != null) {
+                message = newMsg;
+            }
         }
     }
 
