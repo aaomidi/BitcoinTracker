@@ -12,16 +12,13 @@ import lombok.Getter;
 import org.json.JSONArray;
 
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 @Getter
 public class BitcoinHandler {
     private final ConcurrentHashMap<CoinType, CoinRegistry> coins = new ConcurrentHashMap<>();
-    private final ReentrantLock lock = new ReentrantLock(false);
+    private final ReentrantLock lock = new ReentrantLock(true);
     private final BitcoinTracker instance;
 
     private String blockchainAddr = "https://blockchain.info/ticker";
