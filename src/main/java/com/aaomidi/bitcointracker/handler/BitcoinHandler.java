@@ -7,6 +7,7 @@ import com.aaomidi.bitcointracker.registries.CoinRegistry;
 import com.neovisionaries.ws.client.WebSocket;
 import com.neovisionaries.ws.client.WebSocketAdapter;
 import com.neovisionaries.ws.client.WebSocketFactory;
+import com.neovisionaries.ws.client.WebSocketFrame;
 import lombok.Getter;
 import org.json.JSONArray;
 
@@ -25,6 +26,7 @@ public class BitcoinHandler {
 
     private String blockchainAddr = "https://blockchain.info/ticker";
     private URL blockchainURL;
+    private WebSocket socket;
 
     public BitcoinHandler(BitcoinTracker instance) {
         this.instance = instance;
@@ -40,13 +42,17 @@ public class BitcoinHandler {
 
     private void handleBitcoinWisdomAPI() {
         try {
-            WebSocket socket = new WebSocketFactory()
+            socket = new WebSocketFactory()
                     .createSocket("wss://d2.bitcoinwisdom.com/overview")
                     .addHeader("Origin", "https://bitcoinwisdom.com")
                     .addListener(new WebSocketAdapter() {
                         @Override
-                        public void onTextMessage(WebSocket websocket, String message) throws Exception {
+                        public void onDisconnected(WebSocket websocket, WebSocketFrame serverCloseFrame, WebSocketFrame clientCloseFrame, boolean closedByServer) throws Exception {
+                            socket = websocket.recreate().connectAsynchronously();
+                        }
 
+                        @Override
+                        public void onTextMessage(WebSocket websocket, String message) throws Exception {
                             lock.lock();
                             try {
                                 long time = System.currentTimeMillis();
@@ -77,7 +83,7 @@ public class BitcoinHandler {
                         }
                     }).connectAsynchronously();
 
-            BitcoinTracker.scheduledService.scheduleAtFixedRate(() -> socket.sendText("ping"), 50, 15, TimeUnit.SECONDS);
+            socket.setPingInterval(15 * 1000);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
