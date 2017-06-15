@@ -37,7 +37,6 @@ public class CoinRegistry {
     }
 
     public void registerCoin(CryptoCoin coin) {
-        instance.getBitcoinHandler().getLock().lock();
         try {
             lastUpdate = coin.getTimestamp();
             ConcurrentHashMap<String, CryptoCoin> map = coins.getOrDefault(coin.getDay(), new ConcurrentHashMap<>());
@@ -45,13 +44,10 @@ public class CoinRegistry {
             coins.put(coin.getDay(), map);
         } catch (Exception ex) {
             ex.printStackTrace();
-        } finally {
-            instance.getBitcoinHandler().getLock().unlock();
         }
     }
 
     public double getAverage(int day) {
-        instance.getBitcoinHandler().getLock().lock();
         try {
             ConcurrentHashMap<String, CryptoCoin> map = coins.getOrDefault(day, new ConcurrentHashMap<>());
             double average = 0;
@@ -72,8 +68,6 @@ public class CoinRegistry {
             return average;
         } catch (Exception ex) {
             ex.printStackTrace();
-        } finally {
-            instance.getBitcoinHandler().getLock().unlock();
         }
         return 0;
     }
@@ -90,7 +84,6 @@ public class CoinRegistry {
     }
 
     public String getFormattedMessage(boolean isPrivate, long timeRemaining) {
-        instance.getBitcoinHandler().getLock().lock();
         try {
 
             StringBuilder msg = new StringBuilder(String.format("💰 %s Tracker 💰", type.getHumanizedName()));
@@ -119,14 +112,11 @@ public class CoinRegistry {
             return msg.toString();
         } catch (Exception ex) {
             ex.printStackTrace();
-        } finally {
-            instance.getBitcoinHandler().getLock().unlock();
         }
         return "";
     }
 
     public InlineQueryResultArticle getInline() {
-        instance.getBitcoinHandler().getLock().lock();
         try {
             return InlineQueryResultArticle.builder()
                     .title(type.getHumanizedName())
@@ -146,8 +136,6 @@ public class CoinRegistry {
                     .build();
         } catch (Exception ex) {
             ex.printStackTrace();
-        } finally {
-            instance.getBitcoinHandler().getLock().unlock();
         }
         return null;
     }

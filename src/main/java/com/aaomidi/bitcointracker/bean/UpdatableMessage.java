@@ -59,7 +59,6 @@ public class UpdatableMessage {
             editMessage("The bot will update every " + delay + " seconds for " + MAX_TIME / 60 + " minutes.\nTo get live data join @BitcoinTracker");
         }
         future = BitcoinTracker.scheduledService.scheduleAtFixedRate(() -> {
-            instance.getBitcoinHandler().getLock().lock();
             try {
                 long currentTime = System.currentTimeMillis() / 1000;
                 if (!isChannel && currentTime - start >= MAX_TIME) {
@@ -94,8 +93,6 @@ public class UpdatableMessage {
                 }
             } catch (Exception ex) {
                 ex.printStackTrace();
-            } finally {
-                instance.getBitcoinHandler().getLock().unlock();
             }
         }, startDelay, delay, TimeUnit.SECONDS);
     }

@@ -13,12 +13,10 @@ import org.json.JSONArray;
 
 import java.net.URL;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReentrantLock;
 
 @Getter
 public class BitcoinHandler {
     private final ConcurrentHashMap<CoinType, CoinRegistry> coins = new ConcurrentHashMap<>();
-    private final ReentrantLock lock = new ReentrantLock(true);
     private final BitcoinTracker instance;
 
     private String blockchainAddr = "https://blockchain.info/ticker";
@@ -50,7 +48,6 @@ public class BitcoinHandler {
 
                         @Override
                         public void onTextMessage(WebSocket websocket, String message) throws Exception {
-                            lock.lock();
                             try {
                                 long time = System.currentTimeMillis();
                                 JSONArray data = new JSONArray(message);
@@ -74,8 +71,6 @@ public class BitcoinHandler {
                                 }
                             } catch (Exception ex) {
                                 ex.printStackTrace();
-                            } finally {
-                                lock.unlock();
                             }
                         }
                     }).connectAsynchronously();
