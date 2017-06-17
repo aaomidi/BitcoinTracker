@@ -119,7 +119,7 @@ public class UpdatableMessage {
         }
 
         String action;
-        if (percentChange > 0) {
+        if (percentChange < 0) {
             action = "increased";
         } else {
             action = "decreased";

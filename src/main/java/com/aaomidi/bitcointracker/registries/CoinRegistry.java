@@ -126,6 +126,7 @@ public class CoinRegistry {
                                     .messageText(getFormattedMessage(true, -1))
                                     .parseMode(ParseMode.MARKDOWN)
                                     .build())
+
                     .replyMarkup(InlineKeyboardMarkup.builder()
                             .addRow(InlineKeyboardButton.builder()
                                     .text("Start live updates!")
