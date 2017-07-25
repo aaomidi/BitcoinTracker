@@ -118,6 +118,8 @@
                                     <mainClass>${project.groupId}.${project.name}</mainClass>
                                 </transformer>
                             </transformers>
+                            <outputDirectory>jar/</outputDirectory>
+                            <outputFile>${project.name}.jar</outputFile>
                         </configuration>
                     </execution>
                 </executions>
