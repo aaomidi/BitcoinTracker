@@ -112,14 +112,13 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <outputFile>jar/${project.name}.jar</outputFile>
                             <transformers>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>${project.groupId}.${project.name}</mainClass>
                                 </transformer>
                             </transformers>
-                            <outputDirectory>jar/</outputDirectory>
-                            <outputFile>${project.name}.jar</outputFile>
                         </configuration>
                     </execution>
                 </executions>
