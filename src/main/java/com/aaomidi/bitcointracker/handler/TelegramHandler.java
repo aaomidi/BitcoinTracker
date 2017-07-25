@@ -13,7 +13,7 @@ import pro.zackpollard.telegrambot.api.event.Listener;
 import pro.zackpollard.telegrambot.api.event.chat.message.CommandMessageReceivedEvent;
 
 public class TelegramHandler implements Listener {
-    private final static String channelID = "@BitcoinTracker";
+    private final static String channelID = System.getenv("TELEGRAM_CHAN");
     //private final static String channelID = "-244026053";
     //private final static String channelID = "-224385404";
 

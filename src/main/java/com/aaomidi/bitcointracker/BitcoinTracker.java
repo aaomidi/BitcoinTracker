@@ -9,7 +9,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 public class BitcoinTracker {
-    public final static ExecutorService service = Executors.newFixedThreadPool(15);
     public final static ScheduledExecutorService scheduledService = Executors.newScheduledThreadPool(15);
     @Getter
     private final BitcoinHandler bitcoinHandler;
