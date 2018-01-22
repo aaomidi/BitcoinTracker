@@ -33,7 +33,7 @@ public class CoinRegistry {
     private transient ConcurrentHashMap<Integer, ConcurrentHashMap<String, CryptoCoin>> coins = new ConcurrentHashMap<>();
 
     public static double getPercent(double now, double other) {
-        return other * 100 / now;
+        return now * 100 / other;
     }
 
     public void registerCoin(CryptoCoin coin) {
@@ -74,7 +74,7 @@ public class CoinRegistry {
 
     private String getPercentString(double now, double other) {
         double percent = getPercent(now, other);
-        double val = 100 - percent;
+        double val = percent - 100;
 
         if (val > 0) {
             return String.format("\t⬆ +%.2f%%", Math.abs(val));
