@@ -112,7 +112,7 @@ public class UpdatableMessage {
         double now = coinRegistry.getAverage(99);
         double percent = CoinRegistry.getPercent(now, lastAlertPrice);
 
-        double percentChange = percent - 100;
+        double percentChange = 100 - percent;
 
         if (Math.abs(percentChange) < CHANGE_PERCENT) {
             return false;
